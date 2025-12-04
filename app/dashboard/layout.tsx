@@ -1,13 +1,11 @@
-// app/dashboard/[deviceId]/layout.tsx
-
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { ReactNode } from "react";
 
-interface LayoutProps {
+type Props = {
   children: ReactNode;
   params: Promise<{ deviceId: string }>;
-}
+};
 
-export default async function Dashboard({ children }: LayoutProps) {
+export default async function DashboardLayoutWrapper({ children }: Props) {
   return <DashboardLayout>{children}</DashboardLayout>;
 }
