@@ -1,24 +1,56 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Send,
   Paperclip,
-  Smile,
   X,
   Loader2,
-  Image as ImageIcon,
+  FileText,
+  FileImage,
+  FileVideo,
+  FileAudio,
+  File,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface MessageInputProps {
-  onSend: (content: string, attachmentUrl?: string) => Promise<void>;
+  onSend: (
+    content: string,
+    attachmentUrl?: string,
+    attachmentType?: string
+  ) => Promise<void>;
   onTyping?: () => void;
   disabled?: boolean;
   placeholder?: string;
+}
+
+// Get appropriate icon for file type
+function getFileIcon(file: File) {
+  const type = file.type;
+  if (type.startsWith("image/")) return FileImage;
+  if (type.startsWith("video/")) return FileVideo;
+  if (type.startsWith("audio/")) return FileAudio;
+  if (
+    type.includes("pdf") ||
+    type.includes("document") ||
+    type.includes("text")
+  )
+    return FileText;
+  return File;
+}
+
+// Get file type category
+function getFileTypeCategory(file: File): string {
+  const type = file.type;
+  if (type.startsWith("image/")) return "IMAGE";
+  if (type.startsWith("video/")) return "VIDEO";
+  if (type.startsWith("audio/")) return "AUDIO";
+  return "FILE";
 }
 
 export function MessageInput({
@@ -43,6 +75,7 @@ export function MessageInput({
     setIsSending(true);
     try {
       let attachmentUrl: string | undefined;
+      let attachmentType: string | undefined;
 
       // Upload attachment if present
       if (attachment) {
@@ -58,10 +91,11 @@ export function MessageInput({
         if (uploadRes.ok) {
           const { url } = await uploadRes.json();
           attachmentUrl = url;
+          attachmentType = attachment.type;
         }
       }
 
-      await onSend(trimmedMessage, attachmentUrl);
+      await onSend(trimmedMessage, attachmentUrl, attachmentType);
       setMessage("");
       setAttachment(null);
       setAttachmentPreview(null);
@@ -94,6 +128,7 @@ export function MessageInput({
     const file = e.target.files?.[0];
     if (file) {
       setAttachment(file);
+      // Only create preview for images
       if (file.type.startsWith("image/")) {
         setAttachmentPreview(URL.createObjectURL(file));
       } else {
@@ -103,12 +138,23 @@ export function MessageInput({
   };
 
   const removeAttachment = () => {
+    if (attachmentPreview) {
+      URL.revokeObjectURL(attachmentPreview);
+    }
     setAttachment(null);
     setAttachmentPreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const FileIcon = attachment ? getFileIcon(attachment) : File;
 
   return (
     <div className="border-t bg-background p-4">
@@ -121,16 +167,18 @@ export function MessageInput({
             exit={{ opacity: 0, height: 0 }}
             className="mb-3"
           >
-            <div className="inline-flex items-center gap-2 bg-muted rounded-lg p-2 pr-3">
+            <div className="inline-flex items-center gap-3 bg-muted rounded-lg p-2 pr-3 max-w-full">
               {attachmentPreview ? (
-                <img
+                <Image
+                  width={300}
+                  height={300}
                   src={attachmentPreview}
                   alt="Preview"
-                  className="w-12 h-12 rounded object-cover"
+                  className="w-14 h-14 rounded-lg object-cover"
                 />
               ) : (
-                <div className="w-12 h-12 rounded bg-primary/10 flex items-center justify-center">
-                  <Paperclip className="w-5 h-5 text-primary" />
+                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <FileIcon className="w-6 h-6 text-primary" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
@@ -138,13 +186,14 @@ export function MessageInput({
                   {attachment.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {(attachment.size / 1024).toFixed(1)} KB
+                  {formatFileSize(attachment.size)} •{" "}
+                  {getFileTypeCategory(attachment)}
                 </p>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-8 w-8 shrink-0"
                 onClick={removeAttachment}
               >
                 <X className="h-4 w-4" />
@@ -160,7 +209,7 @@ export function MessageInput({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,.pdf,.doc,.docx"
+          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar"
           className="hidden"
           onChange={handleFileSelect}
         />
@@ -183,10 +232,7 @@ export function MessageInput({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled || isSending}
-            className={cn(
-              "min-h-[44px] max-h-[150px] resize-none py-3 pr-12",
-              "scrollbar-thin scrollbar-thumb-muted-foreground/20"
-            )}
+            className={cn("min-h-11 max-h-[150px] resize-none py-3 pr-4")}
             rows={1}
           />
         </div>

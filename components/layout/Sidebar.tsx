@@ -11,6 +11,7 @@ import {
   LogOut,
   DiamondIcon,
   MessageCircle,
+  LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -18,21 +19,31 @@ import { useState } from "react";
 import { ModeToggle } from "@/components/ui/ModeToggle";
 import { signOut } from "next-auth/react";
 
-export default function Sidebar() {
-  const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+interface MenuItem {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+}
 
-  const menuItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Chat", href: "/dashboard/chat", icon: MessageCircle },
-    { name: "Profile", href: "/dashboard/profile", icon: User },
-  ];
+const menuItems: MenuItem[] = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Chat", href: "/dashboard/chat", icon: MessageCircle },
+  { name: "Profile", href: "/dashboard/profile", icon: User },
+];
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/" });
-  };
+// Moved outside of Sidebar component
+interface SidebarContentProps {
+  pathname: string;
+  onNavClick: () => void;
+  onLogout: () => void;
+}
 
-  const SidebarContent = () => (
+function SidebarContent({
+  pathname,
+  onNavClick,
+  onLogout,
+}: SidebarContentProps) {
+  return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 p-4 shrink-0">
         <div className="p-2 bg-foreground rounded-lg">
@@ -60,7 +71,7 @@ export default function Sidebar() {
             >
               <Link
                 href={item.href}
-                onClick={() => setIsOpen(false)}
+                onClick={onNavClick}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group ${
                   isActive
                     ? "bg-foreground text-background"
@@ -100,7 +111,7 @@ export default function Sidebar() {
           <Button
             variant="ghost"
             className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={handleLogout}
+            onClick={onLogout}
           >
             <LogOut className="w-4 h-4" />
             <span className="text-sm font-medium">Logout</span>
@@ -109,6 +120,19 @@ export default function Sidebar() {
       </div>
     </div>
   );
+}
+
+export default function Sidebar() {
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" });
+  };
+
+  const handleNavClick = () => {
+    setIsOpen(false);
+  };
 
   return (
     <>
@@ -117,14 +141,6 @@ export default function Sidebar() {
         animate={{ y: 0, opacity: 1 }}
         className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b h-14 flex items-center justify-between px-4"
       >
-        {/* <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-foreground rounded-lg">
-            <DiamondIcon className="w-4 h-4 text-background" />
-          </div>
-          <div>
-            <h1 className="font-bold text-sm">My App</h1>
-          </div>
-        </div> */}
         <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -163,7 +179,11 @@ export default function Sidebar() {
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="lg:hidden fixed top-14 left-0 bottom-0 w-64 bg-card border-r z-40"
       >
-        <SidebarContent />
+        <SidebarContent
+          pathname={pathname}
+          onNavClick={handleNavClick}
+          onLogout={handleLogout}
+        />
       </motion.aside>
 
       <motion.aside
@@ -172,7 +192,11 @@ export default function Sidebar() {
         transition={{ type: "spring", damping: 20, stiffness: 100 }}
         className="hidden lg:block fixed top-0 left-0 bottom-0 w-64 border-r bg-card z-30"
       >
-        <SidebarContent />
+        <SidebarContent
+          pathname={pathname}
+          onNavClick={handleNavClick}
+          onLogout={handleLogout}
+        />
       </motion.aside>
 
       <div className="hidden lg:block w-64 shrink-0" />

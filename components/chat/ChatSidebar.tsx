@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { ConversationList } from "./ConversationList";
 import { UserSearchDialog } from "./UserSearchDialog";
 import type { Conversation } from "@/types/chat";

@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
-import { useChatStore } from "@/stores/chat-store";
 import type { Message } from "@/types/chat";
 
 interface MessageListProps {

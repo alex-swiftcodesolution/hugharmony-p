@@ -56,7 +56,7 @@ interface ChatState {
   setOnlineUsers: (userIds: string[]) => void;
 }
 
-export const useChatStore = create<ChatState>((set, get) => ({
+export const useChatStore = create<ChatState>((set) => ({
   // Initial state
   conversations: [],
   activeConversationId: null,

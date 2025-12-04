@@ -81,7 +81,7 @@ export function ConversationItem({
           {unreadCount > 0 && (
             <Badge
               variant="default"
-              className="h-5 min-w-[20px] px-1.5 text-[10px] font-semibold"
+              className="h-5 min-w-5 px-1.5 text-[10px] font-semibold"
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>

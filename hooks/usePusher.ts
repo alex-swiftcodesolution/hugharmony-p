@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import type { Channel, PresenceChannel } from "pusher-js";
+import type { Channel } from "pusher-js";
 import {
   getPusherClient,
   PUSHER_EVENTS,
@@ -49,10 +49,8 @@ export function usePusher({
     const pusher = getPusherClient();
     const channelName = getConversationChannel(conversationId);
 
-    // Subscribe to conversation channel
     channelRef.current = pusher.subscribe(channelName);
 
-    // Bind event handlers
     if (onNewMessage) {
       channelRef.current.bind(PUSHER_EVENTS.NEW_MESSAGE, onNewMessage);
     }
@@ -72,7 +70,6 @@ export function usePusher({
       channelRef.current.bind(PUSHER_EVENTS.TYPING_STOP, onTypingStop);
     }
 
-    // Cleanup
     return () => {
       if (channelRef.current) {
         channelRef.current.unbind_all();
@@ -90,7 +87,6 @@ export function usePusher({
     onTypingStop,
   ]);
 
-  // Subscribe to user's personal channel for notifications
   useEffect(() => {
     if (!userId) return;
 
@@ -103,7 +99,6 @@ export function usePusher({
       userChannelRef.current.bind(
         PUSHER_EVENTS.NEW_MESSAGE,
         (data: { conversationId: string; message: Message }) => {
-          // Only trigger if it's not the current conversation
           if (data.conversationId !== conversationId) {
             onNewMessage(data.message);
           }
@@ -121,12 +116,11 @@ export function usePusher({
   }, [userId, conversationId, onNewMessage]);
 
   return {
-    channel: channelRef.current,
-    userChannel: userChannelRef.current,
+    channelRef,
+    userChannelRef,
   };
 }
 
-// Hook for sending typing indicators
 export function useTypingIndicator(conversationId: string | undefined) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingRef = useRef(false);
@@ -154,12 +148,10 @@ export function useTypingIndicator(conversationId: string | undefined) {
       sendTypingIndicator(true);
     }
 
-    // Clear existing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Set timeout to stop typing after 3 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
       isTypingRef.current = false;
       sendTypingIndicator(false);
@@ -176,7 +168,6 @@ export function useTypingIndicator(conversationId: string | undefined) {
     }
   }, [sendTypingIndicator]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) {

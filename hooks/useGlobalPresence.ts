@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import type { PresenceChannel, Members } from "pusher-js";
 import { getPusherClient } from "@/lib/pusher-client";
 import { useChatStore } from "@/stores/chat-store";

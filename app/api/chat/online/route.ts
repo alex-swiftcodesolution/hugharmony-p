@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { pusherServer, getUserChannel } from "@/lib/pusher-server";
+import { pusherServer } from "@/lib/pusher-server";
 
 // POST - Mark user as online/offline
 export async function POST(req: NextRequest) {

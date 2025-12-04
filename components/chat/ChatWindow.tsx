@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
 import { motion } from "motion/react";
-import { ArrowLeft, MoreVertical, Phone, Video, Info } from "lucide-react";
+import { ArrowLeft, Phone, Video, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatAvatar } from "./ChatAvatar";
@@ -21,7 +20,11 @@ interface ChatWindowProps {
   isLoading?: boolean;
   isLoadingMessages?: boolean;
   hasMoreMessages?: boolean;
-  onSendMessage: (content: string, attachmentUrl?: string) => Promise<void>;
+  onSendMessage: (
+    content: string,
+    attachmentUrl?: string,
+    attachmentType?: string
+  ) => Promise<void>;
   onTyping?: () => void;
   onLoadMoreMessages?: () => void;
   onEditMessage?: (messageId: string, content: string) => void;

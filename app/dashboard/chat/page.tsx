@@ -237,10 +237,22 @@ export default function ChatPage() {
   };
 
   // Send message
-  const handleSendMessage = async (content: string, attachmentUrl?: string) => {
+  // Send message
+  const handleSendMessage = async (
+    content: string,
+    attachmentUrl?: string,
+    attachmentType?: string
+  ) => {
     if (!activeConversationId) return;
 
     stopTyping();
+
+    // Determine message type based on attachment
+    let messageType = "TEXT";
+    if (attachmentType) {
+      if (attachmentType.startsWith("image/")) messageType = "IMAGE";
+      else messageType = "FILE";
+    }
 
     const res = await fetch(
       `/api/chat/conversations/${activeConversationId}/messages`,
@@ -250,7 +262,8 @@ export default function ChatPage() {
         body: JSON.stringify({
           content,
           attachmentUrl,
-          type: attachmentUrl ? "IMAGE" : "TEXT",
+          attachmentType,
+          type: messageType,
         }),
       }
     );
@@ -326,10 +339,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex">
+    <div className="h-[calc(100vh)] flex">
       {/* Sidebar - hidden on mobile when viewing chat */}
       <motion.div
-        className={`w-full md:w-80 lg:w-96 flex-shrink-0 ${
+        className={`w-full md:w-auto lg:w-auto shrink-0 ${
           isMobileViewingChat ? "hidden md:flex" : "flex"
         }`}
         initial={{ opacity: 0, x: -20 }}
